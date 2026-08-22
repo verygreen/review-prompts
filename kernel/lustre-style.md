@@ -100,14 +100,15 @@ every token that should differ actually does. Real recurring bugs:
   code. This is **not enforced** — do not warn when a patch leaves surrounding
   space-aligned code unconverted. And when a patch *does* convert nearby lines to
   tabs, that is welcome, not an unrelated change (see lustre-commit-message.md).
-- Indent continuation lines by exactly one extra tab beyond the parent statement;
-  don't use tab-alignment to a parenthesis.
+- Indent continuation lines one space after the opening parenthesis on the previous line which the wrapped line is nested inside of.  If the alignment to he parenthesis is so deep that it causes the indented line(s) to exceed 80 columns, or this is not a nested statement, then it should be indented one extra tab beyond the parent statement.
 - Remove extra/trailing blank lines and double or trailing spaces.
 - Keep option lists, enum entries, and `#include`s in alphabetical order.
   Includes are grouped kernel, then lustre, then local, alphabetical within
   each group.
 - Use designated initializers in struct/option tables
   (`{ .val = 'c', .name = "cache", .has_arg = required_argument }`).
+- Local variable declarations should have only a single space between the variable type and the variable name. Older code used tabs for aligning the variable names, but this style is deprecated and patches modifying such a local variable declaration block may remove this alignment.
+- variable declarations in struct definitions should be tab aligned.
 
 ## Constants / magic numbers — `(style)`
 
