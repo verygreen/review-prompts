@@ -70,12 +70,25 @@ The body must explain the change such that nothing in the diff is a surprise.
 - Build a mental list of every distinct change in the diff (reuse the CHANGE
   CATEGORIES from review-core.md).
 - For each one, confirm the commit message accounts for it.
-- **Any change in the diff not explained by the commit message must be flagged
-  and questioned as possibly unrelated/accidental.** It is common for a dirty
-  working tree to get an unrelated hunk committed by accident
-  (a debug print left in, an unrelated file, a reverted-then-reapplied
-  line, a bumped version). Ask whether that hunk belongs in this patch or should
-  be split out.
+- **Any behavior-changing or user-visible change in the diff not explained by
+  the commit message must be flagged** and questioned as possibly
+  unrelated/accidental. It is common for a dirty working tree to get an
+  unrelated hunk committed by accident (a debug print left in, an unrelated
+  file, a reverted-then-reapplied line, a bumped version). Ask whether that hunk
+  belongs in this patch or should be split out.
+- **Do not flag trivial drive-by cleanups as undescribed, and do not suggest
+  splitting them out.** Maintainers explicitly tolerate small style/whitespace
+  cleanups to nearby code ("to avoid the overhead of testing/reviewing separate
+  patches") and consider them not worth a commit-message mention: whitespace or
+  reflow, dropping a redundant `!= NULL`, blank-line changes, reordering
+  declarations, an obvious one-character fix or guard next to the real change.
+  A commit message need not document *everything*; only what changes behavior.
+- For a large mechanical series (checkpatch cleanups, kernel-doc fixes, and the
+  like) a generic templated commit message shared across the series is
+  acceptable; don't demand a bespoke description per patch.
+- Flag a body written as a **delta from a previous patchset** ("compared to v3
+  this now also ...", "reworked per review"): the message must describe the
+  change against master, not against an earlier revision of itself.
 - Even when an extra change is deliberate, an unrelated bug fix, code move, or
   independently-landable piece should usually go in its own patch with a new
   `Change-Id:` so it can be reviewed and land separately. The exception is a bug

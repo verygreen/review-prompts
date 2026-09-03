@@ -100,8 +100,16 @@ every token that should differ actually does. Real recurring bugs:
   code. This is **not enforced** — do not warn when a patch leaves surrounding
   space-aligned code unconverted. And when a patch *does* convert nearby lines to
   tabs, that is welcome, not an unrelated change (see lustre-commit-message.md).
-- Indent continuation lines by exactly one extra tab beyond the parent statement;
-  don't use tab-alignment to a parenthesis.
+- Wrapped/continuation lines: Lustre style is to **align the continuation
+  with the character after the open parenthesis on the previous line** when
+  that is practical, and to fall back to one extra tab stop only when
+  paren-alignment isn't practical (e.g. it would push past 80 columns). Do
+  *not* tell people "one extra tab" is the rule — that is wrong for Lustre.
+- Never propose a re-alignment, re-wording, or joined line that would exceed
+  80 columns; odd-looking spacing is usually deliberate to stay within 80.
+- Don't propose a `typedef` for a callback/function-pointer type, a one-use
+  accessor/helper, or leave-alone-worthy micro-refactors; kernel style
+  dislikes typedefs and reviewers reject them.
 - Remove extra/trailing blank lines and double or trailing spaces.
 - Keep option lists, enum entries, and `#include`s in alphabetical order.
   Includes are grouped kernel, then lustre, then local, alphabetical within

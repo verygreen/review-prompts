@@ -221,6 +221,13 @@ the change for regressions.
     suppress that finding entirely.** Do not quote the bot, cite the bot, or
     restate the issue as though you had found it independently.
 
+  - **Series awareness.** Many changes are one link of a Gerrit relation
+    chain. Before flagging a symbol, parameter, field, sysfs entry, tunable, or
+    man-page cross-reference as unused / dead / not-yet-used, check the change's
+    relations (`/changes/<id>/revisions/current/related`) — it is routinely
+    consumed by the next patch in the stack. If so, skip it or at most ask as a
+    question; never demand the series be reworked around it.
+
   - **Do not repeat a point a human reviewer has already made on the latest
     patchset.** Restating an existing comment adds no value and clutters the
     review. This applies to your own independent findings too: if your analysis
@@ -230,8 +237,15 @@ the change for regressions.
     1. **Unaddressed carryover:** it was raised on an *earlier* patchset and is
        still not addressed in the latest revision (the author replied "Done" but
        didn't actually fix it, or never responded and the code is unchanged).
-       Verify it still applies to the current diff before carrying it forward —
-       the author may have fixed it.
+       Verify it still applies to the *current* patchset's diff before carrying
+       it forward — the author may have fixed it. Reviewing a stale checkout and
+       re-raising already-fixed items is a known misfire ("already fixed",
+       "the ordering was fixed before this review round"), so confirm against
+       the revision you were actually given. Also don't re-raise a point a human
+       reviewer has already raised or closed in the current round. Genuine
+       carry-forwards are valued by maintainers ("raised on three patch
+       versions without being addressed") — the failure mode is staleness, not
+       carrying forward.
     2. **Substantiated suspicion:** a reviewer asked a question or voiced a
        suspicion you can now *advance with new evidence* — a concrete call chain,
        trace, or proof that the bug is real. Post your evidence that moves the
@@ -329,8 +343,8 @@ the generated `config.h`, code guards kernel-version-dependent paths with
 
 1. If NO regressions found: Mark complete, proceed to Task 4
 2. If regressions found:
-   - Load `false-positive-guide.md`
-   - Apply each verification check from the guide
+   - Load `false-positive-guide.md` and `lustre-false-positives.md`
+   - Apply each verification check from both guides
    - Only mark complete after all verification done
 
 ### TASK 4: Reporting []

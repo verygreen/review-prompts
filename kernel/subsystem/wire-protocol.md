@@ -100,6 +100,9 @@ kernel/userspace or on-wire boundary:
   a pointer passed from userspace to the kernel. Put fixed fields first, store a
   length for each variable-sized buffer, and pack the buffers at the end. Flag a
   pointer-typed member in a UAPI struct.
+- **Don't propose renames of uapi / on-wire / on-disk identifiers** (struct,
+  field, enum, or command names) even when a clearer name exists — they are
+  kept for compatibility with existing implementations.
 - **Reserved fields and alignment.** Add reserved/padding fields and align 64-bit
   members on 8-byte boundaries in wire/UAPI structs, to allow future expansion
   without breaking layout. Suggest a `__u32 ..._reserved[]` where a struct
@@ -142,7 +145,11 @@ updated.
 ## Request testing
 A patch that changes anything related to wire protocol - either the structures
 or any related processing logic - must add Test-Parameters tags to request
-interop testing using serverversion to request a particular historic
-server build and/or clientversion for a client.
+interop testing using serverversion (and/or clientversion) against a
+**released** major version (e.g. `serverversion=2.16` / `2.17`). Interop
+cannot be run against development tags, so never suggest a dev tag or a
+4-component point release there. A server-only change already runs in interop
+mode against old clients in the standard sessions; an explicit older-server
+run is what to ask for when the client side changed.
 Architecture interop testing could be requested with clientarch/serverarch
 parameters (e.g `clientdistro=rocky9.5 clientarch=aarch64`).

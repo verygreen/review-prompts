@@ -15,6 +15,24 @@
   (e.g. a `man4/<module>.<param>.4` that does `.so man8/<tool>.8`).
 - This applies to module parameters added anywhere in the tree, not only to code
   under `{lnet,lustre}/utils/` — wherever a user-visible knob is introduced.
+- Do **not** flag man-page metadata: placeholder or `.\" Added in commit ...`
+  hashes (they can only be filled in after landing, and that line is emitted by
+  checkpatch itself — removing it is an error), the `.TH` date, section
+  ordering, or an AVAILABILITY/"since" version. The correct availability
+  version is the next *release* (e.g. `2.18.0`), never a development tag such
+  as `2.17.5x`.
+- Man-page EXAMPLES are illustrative and need not compile verbatim. Generic
+  problems in an example — a leaked handle, an unchecked return, a small compile
+  error, a missing include — are worth pointing out but only as a `(nit)`
+  (below `(minor)`): "if the patch is refreshed, ...", never a reason to
+  re-spin.
+- That is different from an example that **contradicts what the code actually
+  does** — a wrong option name, wrong semantics, output the command doesn't
+  produce, a call sequence that would not work. That is a real documentation
+  bug that misleads users; report it at the severity the error warrants
+  (`(minor)` normally, `(defect)` if following the example would do the wrong
+  thing).
+- Referencing an llapi man page that doesn't exist yet is not an error.
 
 ## Userspace tool checkpoints — `(defect)` unless noted
 

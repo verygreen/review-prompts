@@ -15,6 +15,8 @@ enforce.
   numeric order so they're easy to find.
 - A new feature/parameter needs a test that actually exercises it; name the
   suite explicitly when suggesting one (e.g. "add a case in sanity-sec.sh").
+- Don't ask for the LU ticket number in a subtest's name or description — it
+  is findable from git history and reviewers consider it noise.
 
 ## Version gating and interop
 
@@ -25,10 +27,39 @@ enforce.
   The skip message must explain *why* the version is needed, not just restate
   the version: `skip "need MDS >= 2.17.51 for projid in changelog"`, not
   `skip "need 2.17"`.
-- Add interop coverage with an older peer via Test-Parameters in the commit
-  message, e.g.:
+- **Version numbers are 3-component** (`major.minor.patch`, e.g. `2.17.57`),
+  in both `version_code` gates and `Test-Parameters`. Never ask for, or
+  suggest, a 4-component point-release value such as `2.17.51.23`, a
+  `git describe` form (`v2_17_50-225-g...`), or "the next tag" — the version a
+  patch will land in is unknowable before it lands, and interop is only ever
+  tested against released majors, never between development tags, so that
+  precision is meaningless. A gate at the current in-tree 3-component tag (or
+  slightly below it) is **correct**; do not claim it "lets in builds without
+  the fix" and do not nag for a newer or more precise value.
+- Only flag a version gate that is *above* the current in-tree tag (it would
+  skip permanently) or that names the wrong side (an MDS check for behavior
+  that lives on the client, or vice versa). Never assert what version the tree
+  "reports" from your checkout — it may be stale, and a wrong assertion has
+  caused a correct gate to be broken. If a gate looks above-tree, phrase it as
+  a question and point at `LUSTRE-VERSION-GEN`.
+- Do not request a `CLIENT_VERSION` gate for a new test: an older client
+  simply won't have the test, so there is nothing to gate.
+- Interop coverage is requested via Test-Parameters in the commit message, but
+  only against a **released** major (`serverversion=2.16`/`2.17`, or
+  `clientversion=`), never a development tag — interop cannot be run against
+  dev tags. Example:
 
-      Test-Parameters: testlist=sanity serverversion=2.15.3
+      Test-Parameters: testlist=sanity serverversion=2.16.1
+
+  A server-only change already runs in interop mode against old clients in the
+  standard sessions, so an extra request there adds nothing.
+- **Don't request test runs autotest already performs.** `Test-Parameters:
+  trivial` already runs sanity-lnet, so `testlist=sanity-lnet` adds nothing;
+  every new or modified subtest is automatically looped (the
+  review-dne-subtest-change session runs it for ~60 minutes, hundreds of
+  times); ZFS is always run for non-trivial patches, so don't ask for
+  `fstype=zfs`. Only suggest a Test-Parameters line that adds coverage the
+  default sessions don't already provide.
 - Version gated tests should only cover the **test** functionality.  The code
   itself **must** be able to handle interoperation with newer/older peers in
   a robust manner, see `wire-protocol.md`.
@@ -92,12 +123,14 @@ changed tests:
 - **No vacuous passes.** Ensure every helper is actually called and the assertion
   runs; `init_test_env` must run before sourcing test-specific framework files;
   use double quotes where a variable must expand in `awk`/`sed`.
-- **Use the right facet variable.**  The test script commands are executed on
-  the client node.  Commands that need to be executed on the server
-  (e.g. mkfs, mount), or checks that depend on output/state from the server
-  (e.g. `lctl get_param` parameters) need to use `do_facet FACET command` to
-  run on the appropriate server node.  The command should be run on the correct
-  facet,
+- **Run server-side commands on the right facet.** Test-script commands run on
+  the client node. Anything that must execute on a server (e.g. `mkfs`, `mount`,
+  a server-side `lctl set_param`), or a check that reads server state (e.g. a
+  server-side `lctl get_param`), must be wrapped as `do_facet FACET command` so
+  it runs on that server node — and `FACET` must be the target the check is
+  actually about (`mds1` vs `mds2`, `ost1` vs the OST holding the object). A
+  command run bare on the client, or on the wrong facet, silently checks the
+  wrong node.
 - **Use the right facet variable.**  Some pre-defined environment variables
   are facet specific (e.g. `facet_FSTYPE`, `facet_VERSION`), and the right one
   must be used, such as `$mds1_FSTYPE` not undefined `$mgs_FSTYPE`; a typo'd

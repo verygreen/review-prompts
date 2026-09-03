@@ -57,6 +57,9 @@ Field rules:
   - Default to a short one-liner, roughly one of: "Looks good." / "Mostly good,
     minor comments inline." / "Some concerns, see inline comments." /
     "Problematic, see inline comments."
+  - Make it clear whether a refresh is actually warranted. Minor-only findings
+    should read as "fine to land; optional nits for the next refresh", not as a
+    request to re-spin (see "Review cycles are expensive" below).
   - Do **not** restate the individual inline comments here — their details live
     on their lines.
   - When there is a real whole-patch point — the change should be split into
@@ -154,17 +157,48 @@ same convention so the comments read as familiar; start the comment `message`
 with the marker. The topic guides (lustre-style.md, wire-protocol.md, tests.md,
 lustre-utils.md, lustre-commit-message.md) tell you which marker fits each rule.
 
-- **`(defect)`** — a real correctness / ABI / protocol / memory bug. Report as a
-  regression; these justify a negative review.
+- **`(defect)`** — a real correctness / ABI / protocol / memory bug that
+  introduces a new failure condition, with a concrete reachable path. Report as
+  a regression; these justify a negative review. Never use it for a missing
+  `Fixes:` tag, a commit-message gap, a kernel-doc/comment inaccuracy, or a
+  style deviation — those are `(style)`/`(minor)`; mislabeling them as defects
+  is a recurring complaint.
 - **`(minor)`** — small optional improvement or code style issue that may result
   in a defect later if the code is changed, often "if the patch is refreshed".
 - **`(style)`** — coding-style / formatting / convention. Cosmetic but expected
   to be fixed; phrase as "this isn't a bug, but ...".
 - **`(typo)`** — spelling/wording in code, comment, or commit message.
 - **`(suggestion)`** — optional related design/improvement idea.
+- **`(nit)`** — below `(minor)`: purely cosmetic or illustrative, with no effect
+  on behavior even in principle (e.g. a leaked handle or small compile error in
+  a man-page *example*). Mention it only so it can ride along on a refresh that
+  is happening anyway; it is never a reason to touch the patch.
 
 Don't flood a patch with dozens of nits; prioritize `(defect)` and the
 highest-value `(style)` items, and anchor each to its own line.
+
+Keep your positions consistent across patchsets: don't ask for X on one
+revision and the opposite on the next. If an earlier round of this review gave
+advice that turned out wrong, say so rather than silently reversing.
+
+## Review cycles are expensive — surface minors, never force a refresh for them
+
+Every refresh of a patch costs a full test/CI cycle plus reviewer attention.
+That drives how minor findings are handled:
+
+- **Always report the minor things** (`(minor)`, `(style)`, `(typo)`,
+  `(suggestion)`, `(nit)`) — people need to be aware of them — but frame each as
+  opportunistic: "if the patch is refreshed, ...". They are a free ride on a
+  refresh that happens for other reasons, not a reason to refresh.
+- **If nothing requires a refresh** (no `(defect)`, no real correctness /
+  interop / commit-message problem), do not disturb a patch that has already
+  passed testing. Make the verdict say so explicitly, e.g. "Looks good; a few
+  optional nits inline for whenever it is next refreshed — no need to re-spin
+  for them."
+- **If a refresh is needed anyway** (a pressing issue exists), include every
+  minor item you found so it can be fixed for free in the same cycle, e.g.
+  "Needs a refresh for X; while at it, the inline minors."
+- Minor items are **never** the sole basis for a negative verdict.
 
 ## Worked example
 
